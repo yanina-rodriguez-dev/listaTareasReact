@@ -5,9 +5,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Respuestas Rapidas</title>
+<title>Respuestas rápidas</title>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="style.css">
 
 </head>
 
@@ -15,7 +15,7 @@
 
 <header>
 
-<h1></h1>
+<h1>Respuestas rápidas</h1>
 
 <div class="actions">
 
@@ -58,7 +58,14 @@
 
 <script>
 
-let respuestas = JSON.parse(localStorage.getItem("respuestas")) || []
+
+let respuestas = JSON.parse(localStorage.getItem("respuestas") || "[]")
+
+if(!Array.isArray(respuestas)){
+respuestas=[]
+}
+
+
 
 const list = document.getElementById("list")
 const search = document.getElementById("search")
@@ -116,7 +123,7 @@ list.innerHTML=""
 
 
 
-filtradas.forEach((r,i)=>{
+filtradas.forEach((r)=>{
 
 const item=document.createElement("div")
 
@@ -169,7 +176,7 @@ item.querySelector(".delete").onclick=(e)=>{
 
 e.stopPropagation()
 
-respuestas.splice(i,1)
+respuestas = respuestas.filter(resp => resp.id !== r.id)
 
 guardar()
 
@@ -242,6 +249,7 @@ if(titleInput.value.trim()==="") return
 
 respuestas.unshift({
 
+id: Date.now(),
 title:titleInput.value,
 text:textInput.value
 
@@ -299,8 +307,8 @@ saveBtn.click()
 
 render()
 
+
 </script>
 
 </body>
-
 </html>
