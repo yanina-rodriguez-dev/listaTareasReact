@@ -1,328 +1,196 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Respuestas</title>
 
-<title>Banco de Respuestas</title>
-
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="style.css">
 
 </head>
-
 <body>
-
-<div class="container">
 
 <header>
 
-<h1>Banco de Respuestas</h1>
+<h1>Respuestas rápidas</h1>
 
-<button id="nuevoBtn" class="nuevoBtn">
-＋ Nuevo
-</button>
+<div class="actions">
+<input id="search" placeholder="Buscar... (Ctrl + K)">
+<button id="newBtn">＋ Nuevo</button>
+</div>
 
 </header>
 
-
-<input
-type="text"
-id="buscador"
-placeholder="Buscar respuesta... (Ctrl + K)"
->
+<main id="list"></main>
 
 
-<div id="lista"></div>
-
-</div>
-
-
-
-<!-- MODAL NUEVA RESPUESTA -->
-
-<div id="modal" class="modal">
+<div class="modal" id="modal">
 
 <div class="modal-content">
 
 <h2>Nueva respuesta</h2>
 
-<input
-id="titulo"
-placeholder="Título (Enter para guardar)"
->
+<input id="titleInput" placeholder="Título">
 
-<textarea
-id="contenido"
-rows="4"
-placeholder="Respuesta..."
-></textarea>
-
+<textarea id="textInput" placeholder="Mensaje"></textarea>
 
 <div class="modal-actions">
-
-<button id="guardarBtn" class="guardar">
-Guardar
-</button>
-
-<button id="cancelarBtn" class="cancelar">
-Cancelar
-</button>
-
+<button id="saveBtn">Guardar</button>
+<button id="cancelBtn">Cancelar</button>
 </div>
 
 </div>
 
 </div>
-
 
 
 <script>
 
-/* --------------------- */
-/* DATOS */
-/* --------------------- */
+let respuestas = JSON.parse(localStorage.getItem("respuestas")) || []
 
-let respuestas = JSON.parse(localStorage.getItem("respuestas")) || [];
+const list = document.getElementById("list")
+const search = document.getElementById("search")
 
-let editando = null;
+const modal = document.getElementById("modal")
+const newBtn = document.getElementById("newBtn")
+const cancelBtn = document.getElementById("cancelBtn")
+const saveBtn = document.getElementById("saveBtn")
 
+const titleInput = document.getElementById("titleInput")
+const textInput = document.getElementById("textInput")
 
-/* --------------------- */
-/* ELEMENTOS */
-/* --------------------- */
-
-const modal = document.getElementById("modal");
-
-const titulo = document.getElementById("titulo");
-
-const contenido = document.getElementById("contenido");
-
-const buscador = document.getElementById("buscador");
-
-const nuevoBtn = document.getElementById("nuevoBtn");
-
-const lista = document.getElementById("lista");
-
-
-/* --------------------- */
-/* MODAL */
-/* --------------------- */
-
-function abrirModal(){
-
-modal.style.display = "flex";
-
-titulo.focus();
-
-}
-
-function cerrarModal(){
-
-modal.style.display = "none";
-
-titulo.value = "";
-
-contenido.value = "";
-
-editando = null;
-
-}
-
-nuevoBtn.onclick = abrirModal;
-
-document.getElementById("cancelarBtn").onclick = cerrarModal;
-
-
-/* --------------------- */
-/* GUARDAR */
-/* --------------------- */
-
-document.getElementById("guardarBtn").onclick = guardar;
 
 function guardar(){
-
-const t = titulo.value.trim();
-
-const c = contenido.value.trim();
-
-if(!t || !c) return;
-
-if(editando !== null){
-
-respuestas[editando] = {titulo:t,contenido:c};
-
-}else{
-
-respuestas.unshift({titulo:t,contenido:c});
-
-}
-
-localStorage.setItem("respuestas", JSON.stringify(respuestas));
-
-cerrarModal();
-
-mostrar();
-
+localStorage.setItem("respuestas", JSON.stringify(respuestas))
 }
 
 
-/* --------------------- */
-/* MOSTRAR */
-/* --------------------- */
+function render(){
 
-function mostrar(filtro=""){
-
-lista.innerHTML="";
+const q = search.value.toLowerCase()
 
 let filtradas = respuestas.filter(r =>
+r.title.toLowerCase().includes(q)
+)
 
-r.titulo.toLowerCase().includes(filtro.toLowerCase())
+if(q){
+filtradas.sort((a,b)=>{
+if(a.title.toLowerCase().includes(q)) return -1
+return 1
+})
+}
 
-);
+list.innerHTML=""
 
+filtradas.forEach((r,i)=>{
 
-filtradas.forEach(r=>{
+const item=document.createElement("div")
+item.className="item"
 
-const indexReal = respuestas.indexOf(r);
+item.innerHTML=`
 
-const card = document.createElement("div");
+<div class="info">
 
-card.className="card";
-
-
-card.innerHTML=`
-
-<div class="card-top">
-
-<h3>${r.titulo}</h3>
-
-<button class="copiar">Copiar</button>
+<h3>${r.title}</h3>
+<p>${r.text}</p>
 
 </div>
 
-<div class="acciones">
+<div class="buttons">
 
-<button class="editar">Editar</button>
-
-<button class="eliminar">Eliminar</button>
+<button class="copy">Copiar</button>
+<button class="edit">✏</button>
+<button class="delete">🗑</button>
 
 </div>
 
-`;
+`
 
+item.querySelector(".copy").onclick=()=>{
+navigator.clipboard.writeText(r.text)
+}
 
-/* COPIAR */
+item.querySelector(".delete").onclick=()=>{
+respuestas.splice(i,1)
+guardar()
+render()
+}
 
-card.querySelector(".copiar").onclick=()=>{
+item.querySelector(".edit").onclick=()=>{
+titleInput.value=r.title
+textInput.value=r.text
+modal.style.display="flex"
 
-navigator.clipboard.writeText(r.contenido);
+saveBtn.onclick=()=>{
+r.title=titleInput.value
+r.text=textInput.value
+guardar()
+modal.style.display="none"
+render()
+}
+}
 
-/* mover arriba */
+list.appendChild(item)
 
-respuestas.splice(indexReal,1);
-
-respuestas.unshift(r);
-
-localStorage.setItem("respuestas",JSON.stringify(respuestas));
-
-mostrar(buscador.value);
-
-};
-
-
-/* EDITAR */
-
-card.querySelector(".editar").onclick=()=>{
-
-titulo.value=r.titulo;
-
-contenido.value=r.contenido;
-
-editando=indexReal;
-
-modal.style.display="flex";
-
-};
-
-
-/* ELIMINAR */
-
-card.querySelector(".eliminar").onclick=()=>{
-
-respuestas.splice(indexReal,1);
-
-localStorage.setItem("respuestas",JSON.stringify(respuestas));
-
-mostrar(buscador.value);
-
-};
-
-
-lista.appendChild(card);
-
-});
+})
 
 }
 
 
-/* --------------------- */
-/* BUSCADOR */
-/* --------------------- */
+newBtn.onclick=()=>{
+modal.style.display="flex"
+titleInput.value=""
+textInput.value=""
+titleInput.focus()
+}
 
-buscador.addEventListener("input", e => {
-
-mostrar(e.target.value);
-
-});
+cancelBtn.onclick=()=>{
+modal.style.display="none"
+}
 
 
-/* --------------------- */
-/* ENTER PARA GUARDAR */
-/* --------------------- */
+saveBtn.onclick=()=>{
 
-titulo.addEventListener("keydown", e => {
+if(titleInput.value.trim()==="") return
 
-if(e.key === "Enter"){
+respuestas.unshift({
+title:titleInput.value,
+text:textInput.value
+})
 
-e.preventDefault();
+guardar()
 
-guardar();
+modal.style.display="none"
+
+render()
 
 }
 
-});
+
+search.addEventListener("input",render)
 
 
-/* --------------------- */
-/* ATAJOS */
-/* --------------------- */
+document.addEventListener("keydown",(e)=>{
 
-document.addEventListener("keydown", (e) => {
-  if (e.ctrlKey && e.key.toLowerCase() === "n") {
-    e.preventDefault();
-    console.log("Ctrl + N presionado");
-  }
-});
-
-/* CTRL + K */
-
-if(e.ctrlKey && e.key.toLowerCase() === "k"){
-
-e.preventDefault();
-
-buscador.focus();
-
+if(e.ctrlKey && e.key==="k"){
+e.preventDefault()
+search.focus()
 }
 
-});
+if(e.ctrlKey && e.key==="n"){
+e.preventDefault()
+newBtn.click()
+}
+
+if(e.key==="Enter" && document.activeElement===titleInput){
+e.preventDefault()
+saveBtn.click()
+}
+
+})
 
 
-/* --------------------- */
-/* INICIO */
-/* --------------------- */
-
-mostrar();
+render()
 
 </script>
 
