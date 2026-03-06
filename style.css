@@ -1,264 +1,194 @@
+/* Tipografía moderna tipo ChatGPT */
 body{
-
 font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,sans-serif;
-
 background:white;
-
 color:black;
-
 margin:0;
-
-padding:40px 20px;
-
+padding:20px;
 }
+
+/* CONTENEDOR */
 
 .container{
-
-max-width:750px;
-
+max-width:800px;
 margin:auto;
-
 }
 
+/* HEADER */
+
 header{
-
 display:flex;
-
 justify-content:space-between;
-
 align-items:center;
-
+gap:10px;
 margin-bottom:20px;
-
+flex-wrap:wrap;
 }
 
 h1{
-
+font-size:22px;
 margin:0;
-
-font-size:28px;
-
 }
+
+/* BOTON NUEVO */
 
 .nuevoBtn{
-
 background:black;
-
 color:white;
-
 border:none;
-
-padding:10px 16px;
-
+padding:10px 14px;
 border-radius:8px;
-
 font-size:14px;
-
 cursor:pointer;
-
 }
 
-.nuevoBtn:hover{
-
-opacity:.85;
-
-}
+/* BUSCADOR */
 
 input{
-
 width:100%;
-
 padding:12px;
-
 border:1px solid #ddd;
-
 border-radius:8px;
-
 margin-bottom:20px;
-
 font-size:14px;
-
+box-sizing:border-box;
 }
 
+/* TARJETAS */
 
 .card{
-
 border:1px solid #eee;
-
 border-radius:10px;
-
 padding:14px;
-
-margin-bottom:10px;
-
-transition:.2s;
-
+margin-bottom:12px;
 }
-
-.card:hover{
-
-border-color:#ccc;
-
-}
-
 
 .card-top{
-
 display:flex;
-
 justify-content:space-between;
-
 align-items:center;
-
+gap:10px;
+flex-wrap:wrap;
 }
+
+.card-top h3{
+margin:0;
+font-size:16px;
+word-break:break-word;
+}
+
+/* BOTON COPIAR */
 
 .copiar{
-
 background:black;
-
 color:white;
-
 border:none;
-
 padding:8px 14px;
-
 border-radius:6px;
-
 cursor:pointer;
-
 font-size:13px;
-
+white-space:nowrap;
 }
 
-.copiar:hover{
-
-opacity:.85;
-
-}
+/* ACCIONES */
 
 .acciones{
-
 margin-top:8px;
-
+display:flex;
+gap:10px;
+flex-wrap:wrap;
 }
 
 .acciones button{
-
 background:none;
-
 border:none;
-
 color:#555;
-
 cursor:pointer;
-
-margin-right:10px;
-
 font-size:13px;
-
 }
-
-.acciones button:hover{
-
-text-decoration:underline;
-
-}
-
 
 /* MODAL */
 
 .modal{
-
 position:fixed;
-
 top:0;
-
 left:0;
-
 width:100%;
-
 height:100%;
-
-background:rgba(0,0,0,.3);
-
+background:rgba(0,0,0,.35);
 display:none;
-
 align-items:center;
-
 justify-content:center;
-
+padding:20px;
+box-sizing:border-box;
 }
 
 .modal-content{
-
 background:white;
-
-padding:25px;
-
+padding:20px;
 border-radius:10px;
-
-width:400px;
-
+width:100%;
+max-width:420px;
+box-sizing:border-box;
 }
 
 .modal-content h2{
-
 margin-top:0;
-
+font-size:20px;
 }
 
 textarea{
-
 width:100%;
-
 padding:10px;
-
 border:1px solid #ddd;
-
 border-radius:8px;
-
 margin-top:10px;
-
 resize:none;
-
+box-sizing:border-box;
 }
 
+/* BOTONES MODAL */
+
 .modal-actions{
-
 margin-top:15px;
-
 display:flex;
-
 gap:10px;
-
+flex-wrap:wrap;
 }
 
 .guardar{
-
 background:black;
-
 color:white;
-
 border:none;
-
 padding:10px 14px;
-
 border-radius:8px;
-
 cursor:pointer;
-
 }
 
 .cancelar{
-
 background:#eee;
-
 border:none;
-
 padding:10px 14px;
-
 border-radius:8px;
-
 cursor:pointer;
+}
+
+/* ---------------- */
+/* DESKTOP */
+/* ---------------- */
+
+@media (min-width:768px){
+
+h1{
+font-size:28px;
+}
+
+.card-top h3{
+font-size:18px;
+}
+
+.nuevoBtn{
+padding:10px 16px;
+}
 
 }
