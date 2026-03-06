@@ -21,7 +21,13 @@
 
 <input id="search" placeholder="Buscar... (Ctrl + K)">
 
+<button id="exportBtn">Exportar</button>
+
+<button id="importBtn">Importar</button>
+
 <button id="newBtn">＋ Nuevo</button>
+
+<input type="file" id="fileInput" hidden>
 
 </div>
 
@@ -74,6 +80,10 @@ const modal = document.getElementById("modal")
 const newBtn = document.getElementById("newBtn")
 const cancelBtn = document.getElementById("cancelBtn")
 const saveBtn = document.getElementById("saveBtn")
+
+const exportBtn = document.getElementById("exportBtn")
+const importBtn = document.getElementById("importBtn")
+const fileInput = document.getElementById("fileInput")
 
 const titleInput = document.getElementById("titleInput")
 const textInput = document.getElementById("textInput")
@@ -305,8 +315,70 @@ saveBtn.click()
 
 
 
+exportBtn.onclick=()=>{
+
+const data = JSON.stringify(respuestas,null,2)
+
+const blob = new Blob([data],{type:"application/json"})
+
+const url = URL.createObjectURL(blob)
+
+const a=document.createElement("a")
+
+a.href=url
+a.download="respuestas-backup.json"
+
+a.click()
+
+}
+
+
+
+importBtn.onclick=()=>{
+
+fileInput.click()
+
+}
+
+
+
+fileInput.addEventListener("change",(e)=>{
+
+const file=e.target.files[0]
+
+if(!file) return
+
+const reader=new FileReader()
+
+reader.onload=(event)=>{
+
+try{
+
+const data=JSON.parse(event.target.result)
+
+if(Array.isArray(data)){
+
+respuestas=data
+guardar()
 render()
 
+alert("Backup importado correctamente")
+
+}
+
+}catch{
+
+alert("Archivo inválido")
+
+}
+
+}
+
+reader.readAsText(file)
+
+})
+
+render()
 
 </script>
 
