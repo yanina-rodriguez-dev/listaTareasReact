@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Banco de Respuestas</title>
-<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet" href="styles.css">
+
 </head>
 
 <body>
@@ -12,21 +16,30 @@
 <div class="container">
 
 <header>
+
 <h1>Banco de Respuestas</h1>
 
 <button id="nuevoBtn" class="nuevoBtn">
 ＋ Nuevo
 </button>
+
 </header>
 
-<input type="text" id="buscador" placeholder="Buscar respuesta...">
+
+<input
+type="text"
+id="buscador"
+placeholder="Buscar respuesta... (Ctrl + K)"
+>
+
 
 <div id="lista"></div>
 
 </div>
 
 
-<!-- MODAL -->
+
+<!-- MODAL NUEVA RESPUESTA -->
 
 <div id="modal" class="modal">
 
@@ -34,52 +47,103 @@
 
 <h2>Nueva respuesta</h2>
 
-<input id="titulo" placeholder="Título">
+<input
+id="titulo"
+placeholder="Título (Enter para guardar)"
+>
 
-<textarea id="contenido" rows="4" placeholder="Respuesta..."></textarea>
+<textarea
+id="contenido"
+rows="4"
+placeholder="Respuesta..."
+></textarea>
+
 
 <div class="modal-actions">
 
-<button id="guardarBtn" class="guardar">Guardar</button>
-<button id="cancelarBtn" class="cancelar">Cancelar</button>
+<button id="guardarBtn" class="guardar">
+Guardar
+</button>
+
+<button id="cancelarBtn" class="cancelar">
+Cancelar
+</button>
 
 </div>
 
 </div>
 
 </div>
+
 
 
 <script>
 
+/* --------------------- */
+/* DATOS */
+/* --------------------- */
+
 let respuestas = JSON.parse(localStorage.getItem("respuestas")) || [];
+
 let editando = null;
 
+
+/* --------------------- */
+/* ELEMENTOS */
+/* --------------------- */
+
 const modal = document.getElementById("modal");
+
 const titulo = document.getElementById("titulo");
+
 const contenido = document.getElementById("contenido");
+
 const buscador = document.getElementById("buscador");
 
-document.getElementById("nuevoBtn").onclick = () => {
+const nuevoBtn = document.getElementById("nuevoBtn");
+
+const lista = document.getElementById("lista");
+
+
+/* --------------------- */
+/* MODAL */
+/* --------------------- */
+
+function abrirModal(){
+
 modal.style.display = "flex";
+
 titulo.focus();
-};
+
+}
+
+function cerrarModal(){
+
+modal.style.display = "none";
+
+titulo.value = "";
+
+contenido.value = "";
+
+editando = null;
+
+}
+
+nuevoBtn.onclick = abrirModal;
 
 document.getElementById("cancelarBtn").onclick = cerrarModal;
 
-function cerrarModal(){
-modal.style.display = "none";
-titulo.value = "";
-contenido.value = "";
-editando = null;
-}
+
+/* --------------------- */
+/* GUARDAR */
+/* --------------------- */
 
 document.getElementById("guardarBtn").onclick = guardar;
-
 
 function guardar(){
 
 const t = titulo.value.trim();
+
 const c = contenido.value.trim();
 
 if(!t || !c) return;
@@ -94,7 +158,7 @@ respuestas.unshift({titulo:t,contenido:c});
 
 }
 
-localStorage.setItem("respuestas",JSON.stringify(respuestas));
+localStorage.setItem("respuestas", JSON.stringify(respuestas));
 
 cerrarModal();
 
@@ -103,21 +167,29 @@ mostrar();
 }
 
 
-function mostrar(filtro=""){
+/* --------------------- */
+/* MOSTRAR */
+/* --------------------- */
 
-const lista = document.getElementById("lista");
+function mostrar(filtro=""){
 
 lista.innerHTML="";
 
-const filtradas = respuestas.filter(r =>
+let filtradas = respuestas.filter(r =>
+
 r.titulo.toLowerCase().includes(filtro.toLowerCase())
+
 );
 
-filtradas.forEach((r,i)=>{
+
+filtradas.forEach(r=>{
+
+const indexReal = respuestas.indexOf(r);
 
 const card = document.createElement("div");
 
 card.className="card";
+
 
 card.innerHTML=`
 
@@ -132,44 +204,60 @@ card.innerHTML=`
 <div class="acciones">
 
 <button class="editar">Editar</button>
+
 <button class="eliminar">Eliminar</button>
 
 </div>
 
 `;
 
+
+/* COPIAR */
+
 card.querySelector(".copiar").onclick=()=>{
 
 navigator.clipboard.writeText(r.contenido);
 
-const btn = card.querySelector(".copiar");
+/* mover arriba */
 
-btn.textContent="Copiado ✓";
+respuestas.splice(indexReal,1);
 
-setTimeout(()=>btn.textContent="Copiar",1200);
-
-};
-
-card.querySelector(".editar").onclick=()=>{
-
-titulo.value=r.titulo;
-contenido.value=r.contenido;
-
-editando=i;
-
-modal.style.display="flex";
-
-};
-
-card.querySelector(".eliminar").onclick=()=>{
-
-respuestas.splice(i,1);
+respuestas.unshift(r);
 
 localStorage.setItem("respuestas",JSON.stringify(respuestas));
 
 mostrar(buscador.value);
 
 };
+
+
+/* EDITAR */
+
+card.querySelector(".editar").onclick=()=>{
+
+titulo.value=r.titulo;
+
+contenido.value=r.contenido;
+
+editando=indexReal;
+
+modal.style.display="flex";
+
+};
+
+
+/* ELIMINAR */
+
+card.querySelector(".eliminar").onclick=()=>{
+
+respuestas.splice(indexReal,1);
+
+localStorage.setItem("respuestas",JSON.stringify(respuestas));
+
+mostrar(buscador.value);
+
+};
+
 
 lista.appendChild(card);
 
@@ -178,16 +266,66 @@ lista.appendChild(card);
 }
 
 
-buscador.addEventListener("input",e=>{
+/* --------------------- */
+/* BUSCADOR */
+/* --------------------- */
+
+buscador.addEventListener("input", e => {
+
 mostrar(e.target.value);
+
 });
 
-titulo.addEventListener("keydown",e=>{
-if(e.key==="Enter"){
+
+/* --------------------- */
+/* ENTER PARA GUARDAR */
+/* --------------------- */
+
+titulo.addEventListener("keydown", e => {
+
+if(e.key === "Enter"){
+
 e.preventDefault();
+
 guardar();
+
 }
+
 });
+
+
+/* --------------------- */
+/* ATAJOS */
+/* --------------------- */
+
+document.addEventListener("keydown", e => {
+
+/* CTRL + N */
+
+if(e.ctrlKey && e.key.toLowerCase() === "n"){
+
+e.preventDefault();
+
+abrirModal();
+
+}
+
+/* CTRL + K */
+
+if(e.ctrlKey && e.key.toLowerCase() === "k"){
+
+e.preventDefault();
+
+buscador.focus();
+
+}
+
+});
+
+
+/* --------------------- */
+/* INICIO */
+/* --------------------- */
 
 mostrar();
 
