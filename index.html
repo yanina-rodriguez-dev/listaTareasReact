@@ -1,161 +1,196 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Banco de Respuestas</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco de Respuestas</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="container">
-  <h1></h1>
-  
-  <input type="text" id="titulo" placeholder="Título de la respuesta">
-  <textarea id="contenido" rows="4" placeholder="Escribí la respuesta aquí..."></textarea>
 
-  <button class="btn-primary" onclick="guardarRespuesta()">Guardar</button>
-  <button class="btn-secondary" onclick="exportarJSON()">Exportar</button>
+<header>
+<h1>Banco de Respuestas</h1>
 
-  <input type="file" id="importarArchivo" style="display:none" onchange="importarJSON(event)">
-  <button class="btn-secondary" onclick="document.getElementById('importarArchivo').click()">Importar</button>
+<button id="nuevoBtn" class="nuevoBtn">
+＋ Nuevo
+</button>
+</header>
 
-  <hr>
+<input type="text" id="buscador" placeholder="Buscar respuesta...">
 
-  <input type="text" id="buscador" placeholder="🔎 Buscar por título..." oninput="buscarRespuesta()">
+<div id="lista"></div>
 
-  <div id="lista"></div>
-  <div class="feedback" id="feedback"></div>
 </div>
 
+
+<!-- MODAL -->
+
+<div id="modal" class="modal">
+
+<div class="modal-content">
+
+<h2>Nueva respuesta</h2>
+
+<input id="titulo" placeholder="Título">
+
+<textarea id="contenido" rows="4" placeholder="Respuesta..."></textarea>
+
+<div class="modal-actions">
+
+<button id="guardarBtn" class="guardar">Guardar</button>
+<button id="cancelarBtn" class="cancelar">Cancelar</button>
+
+</div>
+
+</div>
+
+</div>
+
+
 <script>
+
 let respuestas = JSON.parse(localStorage.getItem("respuestas")) || [];
-let editIndex = null;
+let editando = null;
 
-function guardarRespuesta() {
-  const titulo = document.getElementById("titulo").value.trim();
-  const contenido = document.getElementById("contenido").value.trim();
+const modal = document.getElementById("modal");
+const titulo = document.getElementById("titulo");
+const contenido = document.getElementById("contenido");
+const buscador = document.getElementById("buscador");
 
-  if (!titulo || !contenido) {
-    mostrarFeedback("Completa todos los campos", "red");
-    return;
-  }
+document.getElementById("nuevoBtn").onclick = () => {
+modal.style.display = "flex";
+titulo.focus();
+};
 
-  if (editIndex !== null) {
-    respuestas[editIndex] = { titulo, contenido };
-    editIndex = null;
-    mostrarFeedback("Respuesta actualizada ✅");
-  } else {
-    respuestas.push({ titulo, contenido });
-    mostrarFeedback("Respuesta guardada ✅");
-  }
+document.getElementById("cancelarBtn").onclick = cerrarModal;
 
-  localStorage.setItem("respuestas", JSON.stringify(respuestas));
-  limpiarFormulario();
-  mostrarRespuestas();
+function cerrarModal(){
+modal.style.display = "none";
+titulo.value = "";
+contenido.value = "";
+editando = null;
 }
 
-function mostrarRespuestas(listaFiltrada = respuestas) {
-  const lista = document.getElementById("lista");
-  lista.innerHTML = "";
+document.getElementById("guardarBtn").onclick = guardar;
 
-  listaFiltrada.forEach((respuesta, index) => {
-    const card = document.createElement("div");
-    card.className = "card";
 
-    card.innerHTML = `
-      <h3>${respuesta.titulo}</h3>
-      <div class="actions">
-        <button class="btn-copy">Copiar</button>
-        <button class="btn-edit">Editar</button>
-        <button class="btn-delete">Eliminar</button>
-      </div>
-    `;
+function guardar(){
 
-    card.querySelector(".btn-copy").onclick = () => copiarTexto(respuesta.contenido);
-    card.querySelector(".btn-edit").onclick = () => editarRespuesta(index);
-    card.querySelector(".btn-delete").onclick = () => eliminarRespuesta(index);
+const t = titulo.value.trim();
+const c = contenido.value.trim();
 
-    lista.appendChild(card);
-  });
+if(!t || !c) return;
+
+if(editando !== null){
+
+respuestas[editando] = {titulo:t,contenido:c};
+
+}else{
+
+respuestas.unshift({titulo:t,contenido:c});
+
 }
 
-function copiarTexto(texto) {
-  navigator.clipboard.writeText(texto)
-    .then(() => mostrarFeedback("Texto copiado ✅"))
-    .catch(() => mostrarFeedback("Error al copiar ❌", "red"));
+localStorage.setItem("respuestas",JSON.stringify(respuestas));
+
+cerrarModal();
+
+mostrar();
+
 }
 
-function editarRespuesta(index) {
-  document.getElementById("titulo").value = respuestas[index].titulo;
-  document.getElementById("contenido").value = respuestas[index].contenido;
-  editIndex = index;
-  window.scrollTo({ top: 0, behavior: "smooth" });
+
+function mostrar(filtro=""){
+
+const lista = document.getElementById("lista");
+
+lista.innerHTML="";
+
+const filtradas = respuestas.filter(r =>
+r.titulo.toLowerCase().includes(filtro.toLowerCase())
+);
+
+filtradas.forEach((r,i)=>{
+
+const card = document.createElement("div");
+
+card.className="card";
+
+card.innerHTML=`
+
+<div class="card-top">
+
+<h3>${r.titulo}</h3>
+
+<button class="copiar">Copiar</button>
+
+</div>
+
+<div class="acciones">
+
+<button class="editar">Editar</button>
+<button class="eliminar">Eliminar</button>
+
+</div>
+
+`;
+
+card.querySelector(".copiar").onclick=()=>{
+
+navigator.clipboard.writeText(r.contenido);
+
+const btn = card.querySelector(".copiar");
+
+btn.textContent="Copiado ✓";
+
+setTimeout(()=>btn.textContent="Copiar",1200);
+
+};
+
+card.querySelector(".editar").onclick=()=>{
+
+titulo.value=r.titulo;
+contenido.value=r.contenido;
+
+editando=i;
+
+modal.style.display="flex";
+
+};
+
+card.querySelector(".eliminar").onclick=()=>{
+
+respuestas.splice(i,1);
+
+localStorage.setItem("respuestas",JSON.stringify(respuestas));
+
+mostrar(buscador.value);
+
+};
+
+lista.appendChild(card);
+
+});
+
 }
 
-function eliminarRespuesta(index) {
-  if (confirm("¿Seguro que querés eliminar esta respuesta?")) {
-    respuestas.splice(index, 1);
-    localStorage.setItem("respuestas", JSON.stringify(respuestas));
-    mostrarRespuestas();
-    mostrarFeedback("Respuesta eliminada 🗑️");
-  }
+
+buscador.addEventListener("input",e=>{
+mostrar(e.target.value);
+});
+
+titulo.addEventListener("keydown",e=>{
+if(e.key==="Enter"){
+e.preventDefault();
+guardar();
 }
+});
 
-function buscarRespuesta() {
-  const texto = document.getElementById("buscador").value.toLowerCase();
-  const filtradas = respuestas.filter(r =>
-    r.titulo.toLowerCase().includes(texto)
-  );
-  mostrarRespuestas(filtradas);
-}
+mostrar();
 
-function exportarJSON() {
-  const datos = JSON.stringify(respuestas, null, 2);
-  const blob = new Blob([datos], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "mis_respuestas.json";
-  a.click();
-
-  URL.revokeObjectURL(url);
-  mostrarFeedback("Archivo exportado 📦");
-}
-
-function importarJSON(event) {
-  const archivo = event.target.files[0];
-  if (!archivo) return;
-
-  const lector = new FileReader();
-  lector.onload = function(e) {
-    try {
-      respuestas = JSON.parse(e.target.result);
-      localStorage.setItem("respuestas", JSON.stringify(respuestas));
-      mostrarRespuestas();
-      mostrarFeedback("Respuestas importadas correctamente ✅");
-    } catch {
-      mostrarFeedback("Archivo inválido ❌", "red");
-    }
-  };
-  lector.readAsText(archivo);
-}
-
-function limpiarFormulario() {
-  document.getElementById("titulo").value = "";
-  document.getElementById("contenido").value = "";
-}
-
-function mostrarFeedback(mensaje, color = "green") {
-  const feedback = document.getElementById("feedback");
-  feedback.style.color = color;
-  feedback.textContent = mensaje;
-  setTimeout(() => feedback.textContent = "", 2500);
-}
-
-mostrarRespuestas();
 </script>
 
 </body>
