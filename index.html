@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lista de Respuestas</title>
+
+<title>Respuestas rápidas</title>
 
 <link rel="stylesheet" href="style.css">
 
 </head>
+
 <body>
 
 <header>
@@ -15,13 +18,18 @@
 <h1>Respuestas rápidas</h1>
 
 <div class="actions">
+
 <input id="search" placeholder="Buscar... (Ctrl + K)">
+
 <button id="newBtn">＋ Nuevo</button>
+
 </div>
 
 </header>
 
+
 <main id="list"></main>
+
 
 
 <div class="modal" id="modal">
@@ -35,13 +43,17 @@
 <textarea id="textInput" placeholder="Mensaje"></textarea>
 
 <div class="modal-actions">
+
 <button id="saveBtn">Guardar</button>
+
 <button id="cancelBtn">Cancelar</button>
-</div>
 
 </div>
 
 </div>
+
+</div>
+
 
 
 <script>
@@ -60,9 +72,36 @@ const titleInput = document.getElementById("titleInput")
 const textInput = document.getElementById("textInput")
 
 
+
 function guardar(){
+
 localStorage.setItem("respuestas", JSON.stringify(respuestas))
+
 }
+
+
+
+function copiarTexto(texto,item){
+
+navigator.clipboard.writeText(texto)
+
+item.classList.add("copied")
+
+let aviso = document.createElement("div")
+aviso.className="copiedLabel"
+aviso.innerText="Copiado ✓"
+
+item.appendChild(aviso)
+
+setTimeout(()=>{
+
+item.classList.remove("copied")
+aviso.remove()
+
+},900)
+
+}
+
 
 
 function render(){
@@ -73,19 +112,17 @@ let filtradas = respuestas.filter(r =>
 r.title.toLowerCase().includes(q)
 )
 
-if(q){
-filtradas.sort((a,b)=>{
-if(a.title.toLowerCase().includes(q)) return -1
-return 1
-})
-}
-
 list.innerHTML=""
+
+
 
 filtradas.forEach((r,i)=>{
 
 const item=document.createElement("div")
+
 item.className="item"
+
+
 
 item.innerHTML=`
 
@@ -106,29 +143,67 @@ item.innerHTML=`
 
 `
 
-item.querySelector(".copy").onclick=()=>{
-navigator.clipboard.writeText(r.text)
+
+
+item.addEventListener("click",(e)=>{
+
+if(e.target.tagName==="BUTTON") return
+
+copiarTexto(r.text,item)
+
+})
+
+
+
+item.querySelector(".copy").onclick=(e)=>{
+
+e.stopPropagation()
+
+copiarTexto(r.text,item)
+
 }
 
-item.querySelector(".delete").onclick=()=>{
+
+
+item.querySelector(".delete").onclick=(e)=>{
+
+e.stopPropagation()
+
 respuestas.splice(i,1)
+
 guardar()
+
 render()
+
 }
 
-item.querySelector(".edit").onclick=()=>{
+
+
+item.querySelector(".edit").onclick=(e)=>{
+
+e.stopPropagation()
+
 titleInput.value=r.title
 textInput.value=r.text
+
 modal.style.display="flex"
 
 saveBtn.onclick=()=>{
+
 r.title=titleInput.value
 r.text=textInput.value
+
 guardar()
+
 modal.style.display="none"
+
 render()
+
 }
+
 }
+
+
 
 list.appendChild(item)
 
@@ -137,26 +212,42 @@ list.appendChild(item)
 }
 
 
+
 newBtn.onclick=()=>{
+
 modal.style.display="flex"
+
 titleInput.value=""
 textInput.value=""
+
 titleInput.focus()
+
 }
 
+
+
 cancelBtn.onclick=()=>{
+
 modal.style.display="none"
+
 }
+
 
 
 saveBtn.onclick=()=>{
 
 if(titleInput.value.trim()==="") return
 
+
+
 respuestas.unshift({
+
 title:titleInput.value,
 text:textInput.value
+
 })
+
+
 
 guardar()
 
@@ -167,27 +258,43 @@ render()
 }
 
 
+
 search.addEventListener("input",render)
+
 
 
 document.addEventListener("keydown",(e)=>{
 
 if(e.ctrlKey && e.key==="k"){
+
 e.preventDefault()
+
 search.focus()
+
 }
+
+
 
 if(e.ctrlKey && e.key==="n"){
+
 e.preventDefault()
+
 newBtn.click()
+
 }
 
+
+
 if(e.key==="Enter" && document.activeElement===titleInput){
+
 e.preventDefault()
+
 saveBtn.click()
+
 }
 
 })
+
 
 
 render()
@@ -195,4 +302,5 @@ render()
 </script>
 
 </body>
+
 </html>
