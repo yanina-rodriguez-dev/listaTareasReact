@@ -298,17 +298,12 @@ guardar();
 /* ATAJOS */
 /* --------------------- */
 
-document.addEventListener("keydown", e => {
-
-/* CTRL + N */
-
-if(e.ctrlKey && e.key.toLowerCase() === "n"){
-
-e.preventDefault();
-
-abrirModal();
-
-}
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.key.toLowerCase() === "n") {
+    e.preventDefault();
+    console.log("Ctrl + N presionado");
+  }
+});
 
 /* CTRL + K */
 
